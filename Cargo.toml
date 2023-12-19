@@ -22,6 +22,7 @@ clap = { version = "^4", features = ["derive"] }
 clap_complete = "^4"
 colors-transform = "^0"
 dirs-next = "^2"
+dynfmt = { version = "0.1.5", features = ["curly"] }
 filetime = "^0"
 globset = "^0"
 lazy_static = "^1"
