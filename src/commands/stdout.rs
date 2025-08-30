@@ -1,13 +1,10 @@
+use super::select::select_by_names;
 use crate::commands::change_directory::change_directory;
 use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::types::state::AppState;
 use crate::utils::unix::expand_shell_string;
 use std::collections::HashSet;
 use std::path::PathBuf;
-
-use std::process::Command;
-
-use super::select::select_by_names;
 
 #[derive(Debug, Clone)]
 pub enum PostProcessor {
@@ -64,10 +61,10 @@ pub fn post_process_std_out(processor: &PostProcessor, app_state: &mut AppState)
         match processor {
             PostProcessor::ChangeDirectory => {
                 change_directory(app_state, as_one_existing_directory(stdout)?.as_path())
-            },
+            }
             PostProcessor::SelectNames => {
                 select_by_names(app_state, &as_string_hash(stdout)?, true)
-            },
+            }
         }
     } else {
         Err(AppError::new(

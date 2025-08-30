@@ -1,11 +1,8 @@
 use std::collections::HashSet;
 
+use super::cursor_move;
 use crate::error::AppResult;
 use crate::types::state::{AppState, MatchState};
-
-use std::process::Command;
-
-use super::cursor_move;
 
 #[derive(Clone, Copy, Debug)]
 pub struct SelectOption {
@@ -139,14 +136,15 @@ pub fn select_by_names(
                 e.set_permanent_selected(false);
             }
         }
-        app_state
-            .state
-            .message_queue_mut()
-            .push_info(format!(
-                "{} files selected{}",
-                num_selected,
-                if deselect_others {format!(", {} files deselected", num_deselected)} else {String::from("")}
-            ));
+        app_state.state.message_queue_mut().push_info(format!(
+            "{} files selected{}",
+            num_selected,
+            if deselect_others {
+                format!(", {} files deselected", num_deselected)
+            } else {
+                String::from("")
+            }
+        ));
     }
     Ok(())
 }
