@@ -2,17 +2,22 @@ use crate::commands::change_directory::change_directory;
 use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::types::state::AppState;
 use crate::utils::unix::expand_shell_string;
+use std::collections::HashSet;
 use std::path::PathBuf;
+
+use super::select::select_by_names;
 
 #[derive(Debug, Clone)]
 pub enum PostProcessor {
     ChangeDirectory,
+    SelectNames,
 }
 
 impl PostProcessor {
     pub fn from_str(args: &str) -> Option<Self> {
         match args {
             "cd" => Some(PostProcessor::ChangeDirectory),
+            "select-names" => Some(PostProcessor::SelectNames),
             _ => None,
         }
     }
@@ -46,6 +51,12 @@ fn as_one_existing_directory(stdout: &str) -> AppResult<PathBuf> {
     }
 }
 
+fn as_string_hash(stdout: &str) -> AppResult<HashSet<String>> {
+    Ok(stdout.lines().map(|s| s.to_string()).collect())
+    //let result: HashSet<String> = stdout.lines().map(|s| s.to_string()).collect();
+    //Ok(result)
+}
+
 pub fn post_process_std_out(processor: &PostProcessor, app_state: &mut AppState) -> AppResult {
     let last_stdout = &app_state.state.last_stdout;
     if let Some(stdout) = last_stdout {
@@ -53,7 +64,10 @@ pub fn post_process_std_out(processor: &PostProcessor, app_state: &mut AppState)
         match processor {
             PostProcessor::ChangeDirectory => {
                 change_directory(app_state, as_one_existing_directory(stdout)?.as_path())
-            }
+            },
+            PostProcessor::SelectNames => {
+                select_by_names(app_state, &as_string_hash(stdout)?, true)
+            },
         }
     } else {
         Err(AppError::new(

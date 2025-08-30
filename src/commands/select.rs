@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::error::AppResult;
 use crate::types::state::{AppState, MatchState};
 
@@ -108,6 +110,44 @@ fn select_with_pattern(
             .state
             .message_queue_mut()
             .push_info(format!("{} files selected", found));
+    }
+    Ok(())
+}
+
+pub fn select_by_names(
+    app_state: &mut AppState,
+    names: &HashSet<String>,
+    deselect_others: bool,
+) -> AppResult {
+    if let Some(curr_list) = app_state
+        .state
+        .tab_state_mut()
+        .curr_tab_mut()
+        .curr_list_mut()
+    {
+        let mut found = 0;
+        let mut deselected = 0;
+        curr_list
+            .iter_mut()
+            .for_each(|e| {
+                if names.contains(e.file_name()) {
+                    found += 1;
+                    e.set_permanent_selected(true);
+                } else {
+                    if deselect_others && e.is_selected() {
+                        deselected += 1;
+                        e.set_permanent_selected(false);
+                    }
+                }
+            });
+        app_state
+            .state
+            .message_queue_mut()
+            .push_info(format!(
+                "{} files selected{}",
+                found,
+                if deselect_others {format!(", {} files deselected", deselected)} else {String::from("")}
+            ));
     }
     Ok(())
 }
