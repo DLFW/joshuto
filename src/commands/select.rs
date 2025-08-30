@@ -121,55 +121,31 @@ pub fn select_by_names(
     names: &HashSet<String>,
     deselect_others: bool,
 ) -> AppResult {
-    Command::new("notify-send")
-    .arg("In select - AT START")
-    .arg(format!("Calling with {} entries.", names.len()))
-    .spawn()
-    .expect("Failed to spawn notify-send")
-    .wait()
-    .expect("notify-send failed");
     if let Some(curr_list) = app_state
         .state
         .tab_state_mut()
         .curr_tab_mut()
         .curr_list_mut()
     {
-        Command::new("notify-send")
-        .arg("In select")
-        .arg(format!("Calling with {} entries.", names.len()))
-        .spawn()
-        .expect("Failed to spawn notify-send")
-        .wait()
-        .expect("notify-send failed");
-        let mut found = 0;
-        let mut deselected = 0;
-        curr_list
-            .iter_mut()
-            .for_each(|e| {
-                if names.contains(e.file_name()) {
-                    Command::new("notify-send")
-                    .arg("In loop -> **FIT FOUND**")
-                    .arg(format!("-> {}", e.file_name()))
-                    .spawn()
-                    .expect("Failed to spawn notify-send")
-                    .wait()
-                    .expect("notify-send failed");
-                    found += 1;
-                    e.set_permanent_selected(true);
-                } else {
-                    if deselect_others && e.is_selected() {
-                        deselected += 1;
-                        e.set_permanent_selected(false);
-                    }
-                }
-            });
+        let mut num_selected = 0;
+        let mut num_deselected = 0;
+        for e in curr_list.iter_mut() {
+            let file_name = e.file_name();
+            if names.contains(file_name) {
+                num_selected += 1;
+                e.set_permanent_selected(true);
+            } else if deselect_others && e.is_selected() {
+                num_deselected += 1;
+                e.set_permanent_selected(false);
+            }
+        }
         app_state
             .state
             .message_queue_mut()
             .push_info(format!(
                 "{} files selected{}",
-                found,
-                if deselect_others {format!(", {} files deselected", deselected)} else {String::from("")}
+                num_selected,
+                if deselect_others {format!(", {} files deselected", num_deselected)} else {String::from("")}
             ));
     }
     Ok(())
