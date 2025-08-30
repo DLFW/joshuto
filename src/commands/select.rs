@@ -3,6 +3,8 @@ use std::collections::HashSet;
 use crate::error::AppResult;
 use crate::types::state::{AppState, MatchState};
 
+use std::process::Command;
+
 use super::cursor_move;
 
 #[derive(Clone, Copy, Debug)]
@@ -119,18 +121,39 @@ pub fn select_by_names(
     names: &HashSet<String>,
     deselect_others: bool,
 ) -> AppResult {
+    Command::new("notify-send")
+    .arg("In select - AT START")
+    .arg(format!("Calling with {} entries.", names.len()))
+    .spawn()
+    .expect("Failed to spawn notify-send")
+    .wait()
+    .expect("notify-send failed");
     if let Some(curr_list) = app_state
         .state
         .tab_state_mut()
         .curr_tab_mut()
         .curr_list_mut()
     {
+        Command::new("notify-send")
+        .arg("In select")
+        .arg(format!("Calling with {} entries.", names.len()))
+        .spawn()
+        .expect("Failed to spawn notify-send")
+        .wait()
+        .expect("notify-send failed");
         let mut found = 0;
         let mut deselected = 0;
         curr_list
             .iter_mut()
             .for_each(|e| {
                 if names.contains(e.file_name()) {
+                    Command::new("notify-send")
+                    .arg("In loop -> **FIT FOUND**")
+                    .arg(format!("-> {}", e.file_name()))
+                    .spawn()
+                    .expect("Failed to spawn notify-send")
+                    .wait()
+                    .expect("notify-send failed");
                     found += 1;
                     e.set_permanent_selected(true);
                 } else {

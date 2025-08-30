@@ -5,6 +5,8 @@ use crate::utils::unix::expand_shell_string;
 use std::collections::HashSet;
 use std::path::PathBuf;
 
+use std::process::Command;
+
 use super::select::select_by_names;
 
 #[derive(Debug, Clone)]
@@ -66,6 +68,13 @@ pub fn post_process_std_out(processor: &PostProcessor, app_state: &mut AppState)
                 change_directory(app_state, as_one_existing_directory(stdout)?.as_path())
             },
             PostProcessor::SelectNames => {
+                Command::new("notify-send")
+                .arg("In stdout")
+                .arg(format!("Calling with stdout {}.", stdout))
+                .spawn()
+                .expect("Failed to spawn notify-send")
+                .wait()
+                .expect("notify-send failed");
                 select_by_names(app_state, &as_string_hash(stdout)?, true)
             },
         }
