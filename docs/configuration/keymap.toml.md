@@ -154,6 +154,36 @@ function joshuto() {
   ]
   ```
 
+### `capture` and `stdout`: runs a shell with post-action
+
+`capture` and `stdout` are two commands which are always used together,
+inside a single command chain.
+
+`capture` runs a shell command, also blocking like `shell`.
+Unlike `shell`, all `stdout` and `stderr` are captured.
+So, `capture` is not suited to run an interactive, terminal-based application,
+because all the “UI”-output won't be shown.
+
+The `stdout`-command can then use the output of the `capture`-command to do a certain action.
+The action is given as parameter.
+As of know, two actions are implemented:
+
+* `cd`: Expects the `capture`d output to be a single line with a valid path,
+   and changes the working directory of the active tab to that path.
+* `select-names`: Expects the `caputre`d output to be any number of lines with each line being a name of a file in the current directory.
+  The action will select all files listed in that output.
+  All other files will be deselected.
+
+#### `cd`-example: go to directory of symlink
+
+This key-chord allows to jumps to the directory, where the file under the cursor is “really” located:
+```toml
+{ keys = ["g", "l"], commands = ["capture realpath %s","stdout cd"]}
+```
+In other words, this jumps to the target directory of a sym-link.
+
+
+
 ### `suspend`: suspends the current session
 can be mapped to Ctrl+z to behave similarly to other programs
 
