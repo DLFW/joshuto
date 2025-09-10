@@ -182,6 +182,42 @@ This key-chord allows to jumps to the directory, where the file under the cursor
 ```
 In other words, this jumps to the target directory of a sym-link.
 
+#### `cd`-example: external bookmark menu
+
+Let's assume you have a file `~/.bookmarks` which list your favorite directories like
+```
+~/
+~/music
+~/repos/work
+```
+You can create a key-chain that lets you select one of those entries and jumps to that directory in Joshuto.
+
+This would do it with Rofi:
+```toml
+{ keys = ["g", "a"], commands = [
+"capture bash -c \"cat ~/.bookmarks | rofi -dmenu\"",
+"stdout cd"
+]},
+```
+We `cat` the content to Rofi, which prints the selected line to `stdout`.
+Then we change to that directory.
+
+Rofi is a GUI application that does not touch your terminal.
+If you want to use some menu in the terminal, like fzf, it's a tiny bit more complicated
+because we must not mix the TUI stuff on `stdout` with the actual data.
+We can achieve that by first using `shell` for the menu,
+and then `capture` to transfer the output.
+
+```toml
+{ keys = ["g", "x"], commands = [
+"shell bash -c \"cat ~/.bookmarks | fzf > /tmp/josh-bookmark-$PPID \"",
+"capture bash -c \"cat /tmp/josh-bookmark-$PPID\"",
+"stdout cd"
+]},
+```
+
+We transfer the selected directory from `shell` to `capture` via a temporary file,
+which is unique because we use the processes parent PID.
 
 
 ### `suspend`: suspends the current session
