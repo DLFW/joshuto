@@ -156,7 +156,7 @@ function joshuto() {
 
 ### `capture` and `stdout`: runs a shell with post-action
 
-`capture` and `stdout` are two commands which are always used together,
+`capture` and `stdout` are two commands which are usually used together,
 inside a single command chain.
 
 `capture` runs a shell command, also blocking like `shell`.
@@ -190,7 +190,7 @@ Let's assume you have a file `~/.bookmarks` which list your favorite directories
 ~/music
 ~/repos/work
 ```
-You can create a key-chain that lets you select one of those entries and jumps to that directory in Joshuto.
+You can create a command-chain that lets you select one of those entries and then jumps to that directory in Joshuto.
 
 This would do it with Rofi:
 ```toml
@@ -219,6 +219,15 @@ and then `capture` to transfer the output.
 We transfer the selected directory from `shell` to `capture` via a temporary file,
 which is unique because we use the processes parent PID.
 
+#### `select-names` example: `sxiv` for selecting files
+
+`select-names` can be used to delegate file selection to another program.
+This 
+
+```toml
+  { keys = ["i", "s", "a"], commands = ["capture bash -c \"find . -type f -print0 | xargs -0 file --mime-type | grep -F 'image/' | cut -d ':' -f 1 | sed 's|^./||' | sxiv -iot\"", "stdout select-names"] },
+  { keys = ["i", "s", "s"], commands = ["capture sxiv -ot %s", "stdout select-names"] },
+```
 
 ### `suspend`: suspends the current session
 can be mapped to Ctrl+z to behave similarly to other programs
